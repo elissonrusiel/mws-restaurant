@@ -49,17 +49,17 @@ fetchRestaurantFromURL = (callback) => {
  * Create restaurant HTML and add it to the webpage
  */
 fillRestaurantHTML = (restaurant = self.restaurant) => {
-  const name = document.getElementById('restaurant-name');
+  const name = document.querySelector('.restaurant-name');
   name.innerHTML = restaurant.name;
 
-  const address = document.getElementById('restaurant-address');
+  const address = document.querySelector('.restaurant-address');
   address.innerHTML = restaurant.address;
 
-  const image = document.getElementById('restaurant-img');
+  const image = document.querySelector('.restaurant-img');
   image.className = 'restaurant-img'
   image.src = DBHelper.imageUrlForRestaurant(restaurant);
 
-  const cuisine = document.getElementById('restaurant-cuisine');
+  const cuisine = document.querySelector('.restaurant-cuisine');
   cuisine.innerHTML = restaurant.cuisine_type;
 
   // fill operating hours
@@ -74,7 +74,7 @@ fillRestaurantHTML = (restaurant = self.restaurant) => {
  * Create restaurant operating hours HTML table and add it to the webpage.
  */
 fillRestaurantHoursHTML = (operatingHours = self.restaurant.operating_hours) => {
-  const hours = document.getElementById('restaurant-hours');
+  const hours = document.querySelector('.restaurant-hours');
   for (let key in operatingHours) {
     const row = document.createElement('tr');
 
@@ -94,7 +94,7 @@ fillRestaurantHoursHTML = (operatingHours = self.restaurant.operating_hours) => 
  * Create all reviews HTML and add them to the webpage.
  */
 fillReviewsHTML = (reviews = self.restaurant.reviews) => {
-  const container = document.getElementById('reviews-container');
+  const container = document.querySelector('.reviews-container');
   const title = document.createElement('h2');
   title.innerHTML = 'Reviews';
   container.appendChild(title);
@@ -105,35 +105,51 @@ fillReviewsHTML = (reviews = self.restaurant.reviews) => {
     container.appendChild(noReviews);
     return;
   }
-  const ul = document.getElementById('reviews-list');
+  const section = document.querySelector('.reviews-list');
   reviews.forEach(review => {
-    ul.appendChild(createReviewHTML(review));
+    section.appendChild(createReviewHTML(review));
   });
-  container.appendChild(ul);
+  container.appendChild(section);
 }
 
 /**
  * Create review HTML and add it to the webpage.
  */
 createReviewHTML = (review) => {
-  const li = document.createElement('li');
-  const name = document.createElement('p');
+  const article = document.createElement('article');
+  
+  /* Review Header */
+  const header = document.createElement('section');
+  header.setAttribute('class', 'review-header');
+
+  const name = document.createElement('section');
+  name.setAttribute('class', 'review-name');
   name.innerHTML = review.name;
-  li.appendChild(name);
+  header.appendChild(name);
 
-  const date = document.createElement('p');
+  const date = document.createElement('section');
+  date.setAttribute('class', 'review-date');
   date.innerHTML = review.date;
-  li.appendChild(date);
+  header.appendChild(date);
 
-  const rating = document.createElement('p');
+  article.appendChild(header);
+
+  /* Review content */
+  const content = document.createElement('section');
+  content.setAttribute('class', 'review-content');
+
+  const rating = document.createElement('section');
+  rating.setAttribute('class', 'review-rating');
   rating.innerHTML = `Rating: ${review.rating}`;
-  li.appendChild(rating);
+  content.appendChild(rating);
 
   const comments = document.createElement('p');
+  comments.setAttribute('class', 'review-comment');
   comments.innerHTML = review.comments;
-  li.appendChild(comments);
+  content.appendChild(comments);
 
-  return li;
+  article.appendChild(content);
+  return article;
 }
 
 /**
