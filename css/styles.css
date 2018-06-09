@@ -63,14 +63,30 @@ main {
   margin: 100px 0 0 0;
 }
 
+.skip-links {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  background: orangered;
+  color: white;
+  padding: 8px;
+  z-index: 1100;
+}
+
+.skip-links:hover {
+  top: 0;
+}
+
 footer {
   background-color: #444;
-  color: #aaa;
+  color: #dcdcdc;
   letter-spacing: 1px;
   padding: 25px;
   text-align: center;
   text-transform: uppercase;
 }
+
+
 
 /* ====================== Navigation ====================== */
 
@@ -130,7 +146,7 @@ header h1 a:hover {
 /* Add a color to all links inside the list */
 
 #breadcrumb li a {
-  color: #0275d8;
+  color: #005094;
   text-decoration: none;
 }
 
@@ -212,7 +228,7 @@ header h1 a:hover {
   padding: 15px;
 }
 
-.restaurants-list article h1 {
+.restaurants-list article h2 {
   color: #f18200;
   letter-spacing: 0;
   margin: 10px 0 20px 0;
@@ -232,8 +248,7 @@ header h1 a:hover {
 }
 
 .restaurants-list article a {
-  /* background-color: orange; */
-  color: #3397DB;
+  color: #005996;
   display: inline-block;
   padding: 20px 15px;
   text-align: center;
