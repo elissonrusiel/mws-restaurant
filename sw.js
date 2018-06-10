@@ -1,4 +1,4 @@
-var staticCacheName = 'restrev-static-v1';
+var staticCacheName = 'restrev-static-v2';
 
 self.addEventListener('install', function(event) {
   event.waitUntil(
@@ -63,6 +63,15 @@ self.addEventListener('activate', function(event) {
 });
 
 self.addEventListener('fetch', function(event) {
+  const requestURL = new URL(event.request.url);
+
+  if (requestURL.origin === location.origin) {
+    if (requestURL.pathname === '/restaurant.html') {
+      event.respondWith(caches.match('restaurant.html'));
+      return;
+    }
+  }
+
   event.respondWith(
     caches.match(event.request).then(function(response) {
       return response || fetch(event.request);

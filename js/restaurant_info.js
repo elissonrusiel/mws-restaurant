@@ -10,6 +10,7 @@ window.initMap = () => {
       console.error(error);
     } else {
       self.map = new google.maps.Map(document.getElementById('map'), {
+        title: 'Restaurants directions',
         zoom: 16,
         center: restaurant.latlng,
         scrollwheel: false
@@ -173,6 +174,7 @@ fillBreadcrumb = (restaurant=self.restaurant) => {
   const breadcrumb = document.getElementById('breadcrumb');
   const li = document.createElement('li');
   li.innerHTML = restaurant.name;
+  li.setAttribute('aria-current', 'page');
   breadcrumb.appendChild(li);
 }
 

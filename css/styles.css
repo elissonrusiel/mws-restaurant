@@ -87,8 +87,6 @@ footer {
   text-transform: uppercase;
 }
 
-
-
 /* ====================== Navigation ====================== */
 
 header {
@@ -285,6 +283,7 @@ header h1 a:hover {
 }
 
 /* Restaurant Information */
+
 .restaurant-name {
   color: #f18200;
   letter-spacing: 0;
@@ -321,6 +320,7 @@ header h1 a:hover {
 }
 
 /* Reviews List */
+
 .reviews-container h2 {
   color: #f58500;
   text-transform: uppercase;
@@ -416,13 +416,11 @@ header h1 a:hover {
   .inside main {
     height: calc(100vh - 165px);
   }
-
   .inside #map-container {
     width: 60%;
     max-width: 100%;
     height: 100%;
   }
-  
   .inside .content-wrapper {
     width: 40%;
     max-width: 800px;

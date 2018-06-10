@@ -90,7 +90,7 @@ window.initMap = () => {
     zoom: 12,
     center: loc,
     scrollwheel: false
-  });
+  });  
   updateRestaurants();
 }
 
