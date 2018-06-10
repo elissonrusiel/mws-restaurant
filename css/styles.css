@@ -73,7 +73,8 @@ main {
   z-index: 1100;
 }
 
-.skip-links:hover {
+.skip-links:focus {
+  color: white;
   top: 0;
 }
 
