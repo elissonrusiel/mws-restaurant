@@ -59,18 +59,24 @@ fillRestaurantHTML = (restaurant = self.restaurant) => {
   const picture = document.querySelector('.restaurant-img');
   const db = DBHelper.imageUrlForRestaurant(restaurant);
 
-  for (let i = 0; i < db.photo.sizes.length; i++) {
-    const source = document.createElement('source');
-    source.media = `(max-width: ${db.photo.sizes[i]}px)`;
-    source.srcset = `/img/${db.photo.name}_${db.photo.sizes[i]}.${db.photo.extension} 1x`;
-    if (db.photo.sizes[i+1] != undefined && db.photo.sizes[i+1] == db.photo.sizes[i]*2) {
-      source.srcset += ` /img/${db.photo.name}_${db.photo.sizes[i+1]}.${db.photo.extension} 2x`;
-    }
-    picture.append(source);
-  }
+  let source = document.createElement('source');
+  source.media = `(max-width: 320px)`;
+  source.srcset = `${db.photo['320']} 1x, ${db.photo['640']} 2x`;  
+  picture.append(source);
 
+  source = document.createElement('source');
+  source.media = `(max-width: 640px)`;
+  source.srcset = `${db.photo['640']} 1x`;  
+  picture.append(source);
+
+  source = document.createElement('source');
+  source.media = `(min-width: 641px)`;
+  source.srcset = `${db.photo['800']} 1x`;  
+  picture.append(source);
+  
   const image = document.createElement('img');
-  image.src = `/img/${db.photo.name}_${db.photo.sizes[db.photo.sizes.length -1]}.${db.photo.extension}`;
+  image.className = 'restaurant-img';
+  image.src = `${db.photo[640]}`;
   image.alt = db.alt;
   picture.append(image);
 

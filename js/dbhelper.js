@@ -3,32 +3,64 @@
  */
 class DBHelper {
 
+  static get _dbPromise() {
+    return DBHelper._openDatabase()
+  }
+
+  /**
+   * Open Database
+   */
+  static _openDatabase() {
+    return idb.open('restrev', 1, function(upgradeDb) {
+      switch(upgradeDb.oldVersion) {
+        case 0:
+          let keyValStore = upgradeDb.createObjectStore('restaurants', { keyPath: 'id' });
+      }
+    });
+  }
   /**
    * Database URL.
    * Change this to restaurants.json file location on your server.
    */
   static get DATABASE_URL() {
-    const port = 8000 // Change this to your server port
-    return `http://localhost:${port}/data/restaurants.json`;
+    const port = 1337 // Change this to your server port
+    return `http://localhost:${port}/restaurants`;
   }
 
   /**
    * Fetch all restaurants.
    */
   static fetchRestaurants(callback) {
-    let xhr = new XMLHttpRequest();
-    xhr.open('GET', DBHelper.DATABASE_URL);
-    xhr.onload = () => {
-      if (xhr.status === 200) { // Got a success response from server!
-        const json = JSON.parse(xhr.responseText);
-        const restaurants = json.restaurants;
-        callback(null, restaurants);
-      } else { // Oops!. Got an error from server.
-        const error = (`Request failed. Returned status of ${xhr.status}`);
-        callback(error, null);
-      }
-    };
-    xhr.send();
+    // Fetch from API and update idb
+    fetch(DBHelper.DATABASE_URL)
+    .then(response => response.json())
+    .then(data => {
+      DBHelper._dbPromise.then(db => {
+        let tx = db.transaction('restaurants', 'readwrite');
+        let store = tx.objectStore('restaurants');
+        data.forEach(restaurant => {
+          store.put(restaurant);
+        });
+      });
+    })
+    .catch(err => {
+      error = (`Fetch failed. Returned status of ${err}`)
+    });
+    
+    // Get from idb and return to callback function
+    DBHelper._dbPromise.then(db => {
+      db.transaction('restaurants')
+        .objectStore('restaurants')
+        .getAll()
+        .then(data => {
+          callback(null, data)
+        })
+        .catch(err => {
+          const error = (`Get from idb failed. Returned status of ${err}`)
+          callback(error, null)
+        });
+      })
+      
   }
 
   /**
@@ -36,18 +68,37 @@ class DBHelper {
    */
   static fetchRestaurantById(id, callback) {
     // fetch all restaurants with proper error handling.
-    DBHelper.fetchRestaurants((error, restaurants) => {
-      if (error) {
-        callback(error, null);
-      } else {
-        const restaurant = restaurants.find(r => r.id == id);
-        if (restaurant) { // Got the restaurant
-          callback(null, restaurant);
-        } else { // Restaurant does not exist in the database
-          callback('Restaurant does not exist', null);
-        }
-      }
-    });
+    const url = `${DBHelper.DATABASE_URL}/${id}`
+    fetch(url)
+    .then(response => response.json())
+    .then(data => {
+      DBHelper._dbPromise.then(db => {
+        db.transaction('restaurants', 'readwrite')
+        .objectStore('restaurants')
+        .openCursor(parseInt(id))
+        .then(cursor => {
+          if (!cursor) return;
+          cursor.update(data);
+        })
+      });
+    })
+    .catch(err => {
+        const error = (`Request failed. Returned status of ${err}`)
+    })
+
+    // Get from idb and return to callback function
+    DBHelper._dbPromise.then(db => {
+      db.transaction('restaurants')
+        .objectStore('restaurants')
+        .get(parseInt(id))
+        .then(data => {
+          callback(null, data)
+        })
+        .catch(err => {
+          const error = (`Get from idb failed. Returned status of ${err}`)
+          callback(error, null)
+        });
+      })
   }
 
   /**
@@ -149,13 +200,6 @@ class DBHelper {
   /**
    * Restaurant image URL.
    */
-  // static imageUrlForRestaurant(restaurant) {
-  //   const img = {
-  //     src: (`/img/${restaurant.photograph}`),
-  //     alt: restaurant.photograph_alt
-  //   }
-  //   return img;
-  // }
   static imageUrlForRestaurant(restaurant) {
     const img = {
       photo: restaurant.photograph,
