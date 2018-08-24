@@ -11,10 +11,17 @@ class DBHelper {
    * Open Database
    */
   static _openDatabase() {
-    return idb.open('restrev', 1, function(upgradeDb) {
-      switch(upgradeDb.oldVersion) {
+    return idb.open('restrev', 2, function (upgradeDb) {
+      switch (upgradeDb.oldVersion) {
         case 0:
-          let keyValStore = upgradeDb.createObjectStore('restaurants', { keyPath: 'id' });
+          upgradeDb.createObjectStore('restaurants', {
+            keyPath: 'id'
+          });
+        case 1:
+          const reviewsStore = upgradeDb.createObjectStore('reviews', {
+            keyPath: 'id'
+          });
+          reviewsStore.createIndex('restaurant', 'restaurant_id');
       }
     });
   }
@@ -24,7 +31,7 @@ class DBHelper {
    */
   static get DATABASE_URL() {
     const port = 1337 // Change this to your server port
-    return `http://localhost:${port}/restaurants`;
+    return `http://localhost:${port}`;
   }
 
   /**
@@ -32,35 +39,36 @@ class DBHelper {
    */
   static fetchRestaurants(callback) {
     // Fetch from API and update idb
-    fetch(DBHelper.DATABASE_URL)
-    .then(response => response.json())
-    .then(data => {
-      DBHelper._dbPromise.then(db => {
-        let tx = db.transaction('restaurants', 'readwrite');
-        let store = tx.objectStore('restaurants');
-        data.forEach(restaurant => {
-          store.put(restaurant);
-        });
-      });
-    })
-    .catch(err => {
-      error = (`Fetch failed. Returned status of ${err}`)
-    });
-    
-    // Get from idb and return to callback function
-    DBHelper._dbPromise.then(db => {
-      db.transaction('restaurants')
-        .objectStore('restaurants')
-        .getAll()
-        .then(data => {
-          callback(null, data)
-        })
-        .catch(err => {
-          const error = (`Get from idb failed. Returned status of ${err}`)
-          callback(error, null)
+    fetch(`${DBHelper.DATABASE_URL}/restaurants`)
+      .then(response => response.json())
+      .then(data => {
+        DBHelper._dbPromise.then(db => {
+          let tx = db.transaction('restaurants', 'readwrite');
+          let store = tx.objectStore('restaurants');
+          data.forEach(restaurant => {
+            store.put(restaurant);
+          });
         });
       })
-      
+      .catch(err => {
+        const error = (`Fetch failed. Returned status of ${err}`);
+        console.log(error);
+      })
+      .then(() => {
+        // Get from idb and return to callback function
+        DBHelper._dbPromise.then(db => {
+          db.transaction('restaurants')
+            .objectStore('restaurants')
+            .getAll()
+            .then(data => {
+              callback(null, data)
+            })
+            .catch(err => {
+              const error = (`Get from idb failed. Returned status of ${err}`)
+              callback(error, null)
+            });
+        });
+      });
   }
 
   /**
@@ -68,37 +76,83 @@ class DBHelper {
    */
   static fetchRestaurantById(id, callback) {
     // fetch all restaurants with proper error handling.
-    const url = `${DBHelper.DATABASE_URL}/${id}`
+    const url = `${DBHelper.DATABASE_URL}/restaurants/${id}`
     fetch(url)
-    .then(response => response.json())
-    .then(data => {
-      DBHelper._dbPromise.then(db => {
-        db.transaction('restaurants', 'readwrite')
-        .objectStore('restaurants')
-        .openCursor(parseInt(id))
-        .then(cursor => {
-          if (!cursor) return;
-          cursor.update(data);
-        })
-      });
-    })
-    .catch(err => {
-        const error = (`Request failed. Returned status of ${err}`)
-    })
-
-    // Get from idb and return to callback function
-    DBHelper._dbPromise.then(db => {
-      db.transaction('restaurants')
-        .objectStore('restaurants')
-        .get(parseInt(id))
-        .then(data => {
-          callback(null, data)
-        })
-        .catch(err => {
-          const error = (`Get from idb failed. Returned status of ${err}`)
-          callback(error, null)
+      .then(response => response.json())
+      .then(data => {
+        DBHelper._dbPromise.then(db => {
+          let tx = db.transaction('restaurants', 'readwrite');
+          let store = tx.objectStore('restaurants');
+          store.put(data);
         });
       })
+      .catch(err => {
+        const error = (`Request failed. Returned status of ${err}`);
+        console.log(error);
+      })
+      .then(() => {
+        // Get from idb and return to callback function
+        DBHelper._dbPromise.then(db => {
+          db.transaction('restaurants')
+            .objectStore('restaurants')
+            .get(parseInt(id))
+            .then(data => {
+              callback(null, data)
+            })
+            .catch(err => {
+              const error = (`Get from idb failed. Returned status of ${err}`)
+              callback(error, null)
+            });
+        });
+      });    
+  }
+
+  /**
+   * Fetch a reviews by its Restaurant ID.
+   */
+  static fetchReviewsByRestaurantId(id, callback) {
+    // fetch all reviews of a restaurant with proper error handling.
+    const url = `${DBHelper.DATABASE_URL}/reviews?restaurant_id=${id}`
+    fetch(url)
+      .then(response => response.json())
+      .then(data => {
+        DBHelper._dbPromise.then(db => {
+          let tx = db.transaction('reviews', 'readwrite');
+          let store = tx.objectStore('reviews');
+          
+          data.forEach(review => {
+            store.put(review);
+          });
+        });
+      })
+      .catch(err => {
+        const error = (`Request failed. Returned status of ${err}`)
+        console.log(error);
+      })
+      .then(() => {
+        DBHelper._dbPromise.then(db => {
+          db.transaction('reviews')
+            .objectStore('reviews')
+            .index('restaurant')
+            .getAll(parseInt(id))
+            .then(data => {
+              // Get reviews from localStorage and add to array data response 
+              const offlineReviews = JSON.parse(localStorage.getItem('reviews'));
+              if (offlineReviews) {
+                for (const key in offlineReviews) {
+                  if (offlineReviews.hasOwnProperty(key)) {
+                    data.push(offlineReviews[key]);
+                  }
+                }
+              }
+              callback(null, data);
+            })
+            .catch(err => {
+              const error = (`Get from idb failed. Returned status of ${err}`)
+              callback(error, null);
+            });
+        });
+      });
   }
 
   /**
@@ -217,9 +271,74 @@ class DBHelper {
       title: restaurant.name,
       url: DBHelper.urlForRestaurant(restaurant),
       map: map,
-      animation: google.maps.Animation.DROP}
-    );
+      animation: google.maps.Animation.DROP
+    });
     return marker;
   }
 
+  /**
+   * Send review for a restaurant
+   */
+
+  static addReview(review) {    
+    const url = `${DBHelper.DATABASE_URL}/reviews`;
+    fetch(url, {
+        method: 'POST',
+        body: JSON.stringify(review),
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+      .then(response => response.json())
+      .then(data => {
+        DBHelper._dbPromise.then(db => {
+          db.transaction('reviews', 'readwrite')
+            .objectStore('reviews')
+            .put(data)
+        });
+      })
+      .catch(err => {
+        const error = (`Request failed. Returned status of ${err}`);
+        let reviews = JSON.parse(localStorage.getItem('reviews')) || {};
+        const id = Object.keys(reviews).length + 1;
+        reviews[id] = review;
+        localStorage.setItem('reviews', JSON.stringify(reviews));
+      });
+  }
+
+  /**
+   * Save offline data on api server
+   */
+
+   static saveOfflineDataOnAPI() {
+    const offlineReviews = JSON.parse(localStorage.getItem('reviews'));
+    if (offlineReviews) {
+      for (const key in offlineReviews) {
+        if (offlineReviews.hasOwnProperty(key)) {
+          const url = `${DBHelper.DATABASE_URL}/reviews`;
+          return fetch(url, {
+            method: 'POST',
+            body: JSON.stringify(offlineReviews[key]),
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          })
+          .then(response => response.json())
+          .then(data => {
+            DBHelper._dbPromise.then(db => {
+              db.transaction('reviews', 'readwrite')
+                .objectStore('reviews')
+                .put(data)
+            });
+            localStorage.removeItem('reviews');
+            return true;
+          })
+          .catch(err => {
+            console.log('Can´t save offline data on api.');
+            return;
+          });
+        }
+      }
+    }
+   }
 }

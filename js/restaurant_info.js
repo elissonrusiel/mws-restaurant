@@ -1,10 +1,27 @@
 let restaurant;
-var map;
+let reviews
+let map;
+
+/**
+ * Initialize page
+ */
+window.onload = () => {
+  fetchRestaurantFromURL((error, restaurant) => {
+    if (error) console.error(error);
+    fillBreadcrumb();
+    fillRestaurantHTML();
+  });
+  fetchReviewsFromURL((error, reviews) => {
+    if (error) console.error(error);
+  });
+
+  const btn = document.querySelector('#btn-add-review').addEventListener("click", addReview);
+}
 
 /**
  * Initialize Google map, called from HTML.
  */
-window.initMap = () => {
+window.initMap = (restaurant) => {
   fetchRestaurantFromURL((error, restaurant) => {
     if (error) { // Got an error!
       console.error(error);
@@ -15,7 +32,7 @@ window.initMap = () => {
         center: restaurant.latlng,
         scrollwheel: false
       });
-      fillBreadcrumb();
+      // fillBreadcrumb();
       DBHelper.mapMarkerForRestaurant(self.restaurant, self.map);
     }
   });
@@ -40,8 +57,33 @@ fetchRestaurantFromURL = (callback) => {
         console.error(error);
         return;
       }
-      fillRestaurantHTML();
       callback(null, restaurant)
+    });
+  }
+}
+
+/**
+ * Get reviews for current restaurant from page URL.
+ */
+fetchReviewsFromURL = (callback) => {
+  if (self.reviews) { // reviews already fetched!
+    callback(null, self.reviews)
+    return;
+  }
+  const id = getParameterByName('id');
+  if (!id) { // no id found in URL
+    error = 'No restaurant id in URL'
+    callback(error, null);
+  } else {
+    DBHelper.fetchReviewsByRestaurantId(id, (error, reviews) => {
+      self.reviews = reviews;
+      if (!reviews) {
+        console.error(error);
+        return;
+      }
+      // fill reviews
+      fillReviewsHTML();
+      callback(null, reviews)
     });
   }
 }
@@ -61,19 +103,19 @@ fillRestaurantHTML = (restaurant = self.restaurant) => {
 
   let source = document.createElement('source');
   source.media = `(max-width: 320px)`;
-  source.srcset = `${db.photo['320']} 1x, ${db.photo['640']} 2x`;  
+  source.srcset = `${db.photo['320']} 1x, ${db.photo['640']} 2x`;
   picture.append(source);
 
   source = document.createElement('source');
   source.media = `(max-width: 640px)`;
-  source.srcset = `${db.photo['640']} 1x`;  
+  source.srcset = `${db.photo['640']} 1x`;
   picture.append(source);
 
   source = document.createElement('source');
   source.media = `(min-width: 641px)`;
-  source.srcset = `${db.photo['800']} 1x`;  
+  source.srcset = `${db.photo['800']} 1x`;
   picture.append(source);
-  
+
   const image = document.createElement('img');
   image.className = 'restaurant-img';
   image.src = `${db.photo[640]}`;
@@ -88,7 +130,7 @@ fillRestaurantHTML = (restaurant = self.restaurant) => {
     fillRestaurantHoursHTML();
   }
   // fill reviews
-  fillReviewsHTML();
+  // fillReviewsHTML();
 }
 
 /**
@@ -114,11 +156,11 @@ fillRestaurantHoursHTML = (operatingHours = self.restaurant.operating_hours) => 
 /**
  * Create all reviews HTML and add them to the webpage.
  */
-fillReviewsHTML = (reviews = self.restaurant.reviews) => {
-  const container = document.querySelector('.reviews-container');
+fillReviewsHTML = (reviews = self.reviews) => {
+  const container = document.querySelector('.reviews-list');
   const title = document.createElement('h2');
   title.innerHTML = 'Reviews';
-  container.appendChild(title);
+  container.prepend(title);
 
   if (!reviews) {
     const noReviews = document.createElement('p');
@@ -126,11 +168,10 @@ fillReviewsHTML = (reviews = self.restaurant.reviews) => {
     container.appendChild(noReviews);
     return;
   }
-  const section = document.querySelector('.reviews-list');
+
   reviews.forEach(review => {
-    section.appendChild(createReviewHTML(review));
+    container.appendChild(createReviewHTML(review));
   });
-  container.appendChild(section);
 }
 
 /**
@@ -138,7 +179,7 @@ fillReviewsHTML = (reviews = self.restaurant.reviews) => {
  */
 createReviewHTML = (review) => {
   const article = document.createElement('article');
-  
+
   /* Review Header */
   const header = document.createElement('section');
   header.setAttribute('class', 'review-header');
@@ -150,7 +191,8 @@ createReviewHTML = (review) => {
 
   const date = document.createElement('section');
   date.setAttribute('class', 'review-date');
-  date.innerHTML = review.date;
+  const d = new Date(review.createdAt);
+  date.innerHTML = `${d.getFullYear()}-${d.getMonth()}-${d.getDay()} ${d.getHours()}:${d.getMinutes()}`;
   header.appendChild(date);
 
   article.appendChild(header);
@@ -169,6 +211,14 @@ createReviewHTML = (review) => {
   comments.innerHTML = review.comments;
   content.appendChild(comments);
 
+  if (navigator.onLine === false) {
+    const offIcon = document.createElement('div');
+    offIcon.setAttribute('class', 'server-offline');
+    offIcon.setAttribute('title', 'Offline content');
+    offIcon.setAttribute('aria-label', 'This content is offline');
+    article.appendChild(offIcon);
+  }
+
   article.appendChild(content);
   return article;
 }
@@ -176,7 +226,7 @@ createReviewHTML = (review) => {
 /**
  * Add restaurant name to the breadcrumb navigation menu
  */
-fillBreadcrumb = (restaurant=self.restaurant) => {
+fillBreadcrumb = (restaurant = self.restaurant) => {
   const breadcrumb = document.getElementById('breadcrumb');
   const li = document.createElement('li');
   li.innerHTML = restaurant.name;
@@ -198,4 +248,34 @@ getParameterByName = (name, url) => {
   if (!results[2])
     return '';
   return decodeURIComponent(results[2].replace(/\+/g, ' '));
+}
+
+/**
+ * Add review
+ */
+
+addReview = (event) => {
+  event.preventDefault();
+  const container = document.querySelector('.reviews-list');
+  const restaurant_id = parseInt(getParameterByName('id'));
+  const name = document.querySelector("#author").value;
+  const rating = document.querySelector("input[name=rating]:checked").value;
+  const comments = document.querySelector("#comments").value;
+  const createdAt = Date.now();
+  const updatedAt = Date.now();
+  
+  const review = {
+    restaurant_id,
+    name,
+    rating,
+    comments,
+    createdAt,
+    updatedAt
+  }
+
+  DBHelper.addReview(review)
+  document.querySelector('#review-form').reset();
+  
+  // Add review to html reviews list
+  container.appendChild(createReviewHTML(review));
 }

@@ -10,7 +10,6 @@
   <link rel="apple-touch-icon-precomposed" sizes="57x57" href="img/favicon/apple-touch-icon-57x57.png" />
   <link rel="apple-touch-icon-precomposed" sizes="114x114" href="img/favicon/apple-touch-icon-114x114.png" />
   <link rel="apple-touch-icon-precomposed" sizes="72x72" href="img/favicon/apple-touch-icon-72x72.png" />
-  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="img/favicon/apple-touch-icon-144x144.png" />
   <link rel="apple-touch-icon-precomposed" sizes="60x60" href="img/favicon/apple-touch-icon-60x60.png" />
   <link rel="apple-touch-icon-precomposed" sizes="120x120" href="img/favicon/apple-touch-icon-120x120.png" />
   <link rel="apple-touch-icon-precomposed" sizes="76x76" href="img/favicon/apple-touch-icon-76x76.png" />
@@ -26,7 +25,7 @@
   <meta name="msapplication-square70x70logo" content="img/favicon/mstile-70x70.png" />
   <meta name="msapplication-square150x150logo" content="img/favicon/mstile-150x150.png" />
   <meta name="msapplication-wide310x150logo" content="img/favicon/mstile-310x150.png" />
-  <meta name="msapplication-square310x310logo" content="mstile-310x310.png" />
+  <meta name="msapplication-square310x310logo" content="img/favicon/mstile-310x310.png" />
   <!-- End Favicon -->
   <link rel="stylesheet" src="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css" />
   <link rel="stylesheet" href="css/styles.css" type="text/css">
@@ -80,6 +79,39 @@
       <!-- Beginning reviews -->
       <section class="reviews-container">
         <section class="reviews-list"></section>
+        <hr>
+        <section class="add-review-form">
+          <h2>Add Review</h2>
+          <form id="review-form">
+            <input type="hidden" name="restaurant-id">
+            <div class="form-group">
+              <label for="author">Author</label>
+              <input type="text" class="input-text" name="author" id="author" required>
+            </div>
+            <div class="form-group">
+              <label for="rating">Rating</label>
+              <div class="rating">
+                <input type="radio" name="rating" id="rating-1" value="1">
+                <label for="rating-1">1</label>
+                <input type="radio" name="rating" id="rating-2" value="2">
+                <label for="rating-2">2</label>
+                <input type="radio" name="rating" id="rating-3" value="3">
+                <label for="rating-3">3</label>
+                <input type="radio" name="rating" id="rating-4" value="4">
+                <label for="rating-4">4</label>
+                <input type="radio" name="rating" id="rating-5" value="5" checked>
+                <label for="rating-5">5</label>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="comments">Comments</label>
+              <textarea name="comments" id="comments" cols="30" rows="10" required></textarea>
+            </div>
+            <div class="form-group btn-right">
+              <button id="btn-add-review">Add Review</button>
+            </div>
+          </form>          
+        </section>
       </section>
       <!-- End reviews -->
       <!-- Beginning footer -->
@@ -89,6 +121,7 @@
           <strong>Restaurant Reviews</strong>
         </a> All Rights Reserved.
       </footer>
+      <div id="snackbar"></div>
       <!-- End footer -->
     </section>
   </main>
@@ -98,6 +131,7 @@
 
   <!-- Beginning scripts -->
   <!-- Database helpers -->
+  <script type="application/javascript" charset="utf-8" src="js/connection_handler.js"></script>
   <script type="application/javascript" charset="utf-8" src="js/idb.js"></script>
   <script type="text/javascript" src="js/dbhelper.js"></script>
   <!-- Main javascript file -->

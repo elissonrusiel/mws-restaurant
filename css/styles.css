@@ -87,6 +87,12 @@ footer {
   text-transform: uppercase;
 }
 
+hr {
+  border: none;
+  height: 1px;
+  background-color: rgb(219, 219, 219);
+}
+
 /* ====================== Navigation ====================== */
 
 header {
@@ -239,9 +245,6 @@ header h1 a:hover {
 }
 
 .restaurants-list hr {
-  border: none;
-  height: 1px;
-  background-color: rgb(219, 219, 219);
   margin: 0px 15px;
 }
 
@@ -251,7 +254,7 @@ header h1 a:hover {
   padding: 20px 15px;
   text-align: center;
   text-transform: uppercase;
-  font-weight: 500;
+  font-weight: 600;
 }
 
 /* ====================== Restaurant Details ====================== */
@@ -365,7 +368,7 @@ header h1 a:hover {
   display: inline-block;
   padding: 5px 10px 5px 10px;
   text-transform: uppercase;
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .reviews-content .review-comment {
@@ -375,6 +378,64 @@ header h1 a:hover {
 #restaurant-hours td {
   color: #666;
 }
+
+.form-group {
+  margin: 0 0 20px 0; 
+}
+
+.add-review-form {
+
+}
+
+.add-review-form label {
+  margin-bottom: 10px;
+  font-size: 1.2em;
+  color: #444;
+}
+
+.add-review-form .input-text,
+.add-review-form textarea,
+.add-review-form .rating {
+  margin: 10px 0 0 0;
+}
+
+.add-review-form .input-text,
+.add-review-form textarea {
+  display: block;
+  width: calc(100% - 22px);
+  /* line-height: 1.2em; */
+  font-size: 16px;
+  padding: 10px;
+  border-radius: 3px;
+  border: solid 1px #cacaca;
+}
+
+.add-review-form #btn-add-review {
+  padding: 15px;
+  background-color: #3397DB;
+  border: none;
+  color: white;
+  font-weight: 600;
+  border-radius: 2px;
+}
+
+.add-review-form #btn-add-review:hover {
+  color: white;
+  background-color: orange;
+}
+
+.add-review-form .btn-right {
+  text-align: right;
+}
+
+.reviews-list .server-offline {
+  float: right;
+  margin: 10px 20px 0 0;
+  height: 32px;
+  width: 32px;
+  background: url('/img/icons/cloud-error.svg') no-repeat;
+}
+
 
 /* ====================== Responsive ====================== */
 
@@ -426,4 +487,47 @@ header h1 a:hover {
     order: -1;
     overflow-y: auto;
   }
+}
+
+/* ====================== Snackbar ====================== */
+
+#snackbar {
+  visibility: hidden;
+  min-width: 250px;
+  margin-left: -125px;
+  background-color: #333;
+  color: #fff;
+  text-align: center;
+  border-radius: 2px;
+  padding: 16px;
+  position: fixed;
+  z-index: 1;
+  left: 50%;
+  bottom: 30px;
+}
+
+#snackbar.show {
+  visibility: visible;
+  -webkit-animation: fadein 0.5s, fadeout 0.5s 2.5s;
+  animation: fadein 0.5s, fadeout 0.5s 2.5s;
+}
+
+@-webkit-keyframes fadein {
+  from {bottom: 0; opacity: 0;} 
+  to {bottom: 30px; opacity: 1;}
+}
+
+@keyframes fadein {
+  from {bottom: 0; opacity: 0;}
+  to {bottom: 30px; opacity: 1;}
+}
+
+@-webkit-keyframes fadeout {
+  from {bottom: 30px; opacity: 1;} 
+  to {bottom: 0; opacity: 0;}
+}
+
+@keyframes fadeout {
+  from {bottom: 30px; opacity: 1;}
+  to {bottom: 0; opacity: 0;}
 }
