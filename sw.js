@@ -22,6 +22,7 @@ self.addEventListener('install', function(event) {
         'https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css',
         '/manifest.json',
         'img/icons/cloud-error.svg',
+        'img/icons/heart-solid.svg',
         'img/favicon/apple-touch-icon-57x57.png',
         'img/favicon/apple-touch-icon-114x114.png',
         'img/favicon/apple-touch-icon-72x72.png',

@@ -321,6 +321,22 @@ header h1 a:hover {
   padding: 25px 25px 0px 25px;
 }
 
+.restaurant-favorite {
+  color: #949494;
+  float: right;
+  padding: 16px 15px;
+  background: none;
+  border: none;
+}
+
+.restaurant-favorite>svg {
+  width: 32px;
+}
+
+.favorite-active {
+  color: rgba(243, 96, 126, 1);
+}
+
 /* Reviews List */
 
 .reviews-container h2 {
@@ -381,10 +397,6 @@ header h1 a:hover {
 
 .form-group {
   margin: 0 0 20px 0; 
-}
-
-.add-review-form {
-
 }
 
 .add-review-form label {

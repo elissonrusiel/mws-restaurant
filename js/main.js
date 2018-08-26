@@ -21,7 +21,7 @@ document.querySelector('#neighborhoods-select, #cuisines-select').addEventListen
 registerServiceWorker = () => {
   if (!navigator.serviceWorker) return;
 
-  navigator.serviceWorker.register('/sw.js').then(function(reg) {
+  navigator.serviceWorker.register('/sw.js').then(function (reg) {
     if (!navigator.serviceWorker.controller) {
       return;
     }
@@ -95,7 +95,7 @@ window.initMap = () => {
     zoom: 12,
     center: loc,
     scrollwheel: false
-  });  
+  });
   updateRestaurants();
 }
 
@@ -130,7 +130,7 @@ resetRestaurants = (restaurants) => {
   self.restaurants = [];
   const section = document.querySelector('.restaurants-list');
   section.innerHTML = '';
-  
+
   // Remove all map markers
   self.markers.forEach(m => m.setMap(null));
   self.markers = [];
@@ -156,22 +156,22 @@ createRestaurantHTML = (restaurant) => {
   const content = document.createElement('section');
   const picture = document.createElement('picture');
   const db = DBHelper.imageUrlForRestaurant(restaurant);
-  
+
   let source = document.createElement('source');
   source.media = `(max-width: 320px)`;
-  source.srcset = `${db.photo['320']} 1x, ${db.photo['640']} 2x`;  
+  source.srcset = `${db.photo['320']} 1x, ${db.photo['640']} 2x`;
   picture.append(source);
 
   source = document.createElement('source');
   source.media = `(max-width: 640px)`;
-  source.srcset = `${db.photo['640']} 1x`;  
+  source.srcset = `${db.photo['640']} 1x`;
   picture.append(source);
 
   source = document.createElement('source');
   source.media = `(min-width: 641px)`;
-  source.srcset = `${db.photo['800']} 1x`;  
+  source.srcset = `${db.photo['800']} 1x`;
   picture.append(source);
-  
+
   const image = document.createElement('img');
   image.className = 'restaurant-img';
   image.src = `${db.photo[640]}`;
@@ -202,6 +202,17 @@ createRestaurantHTML = (restaurant) => {
   more.href = DBHelper.urlForRestaurant(restaurant);
   article.append(more);
 
+  const favorite = document.createElement('button');
+  favorite.setAttribute('class', 'restaurant-favorite');
+  favorite.innerHTML = '<svg viewBox="0 0 32 32" class="icon"><use xlink:href="/img/icons/heart-solid.svg#fa-heart"></use></svg>';
+  toggleFavoriteClass(favorite, restaurant.is_favorite);
+  favorite.addEventListener('click', (event) => {
+    DBHelper.updateRestaurantFavorite(restaurant.id, !restaurant.is_favorite);
+    restaurant.is_favorite = !restaurant.is_favorite;
+    toggleFavoriteClass(favorite, restaurant.is_favorite);
+  });
+  article.append(favorite);
+
   return article;
 }
 
@@ -217,4 +228,17 @@ addMarkersToMap = (restaurants = self.restaurants) => {
     });
     self.markers.push(marker);
   });
+}
+
+/**
+ * Toggle favorite class
+ */
+toggleFavoriteClass = (element, favoriteStatus) => {
+  if (favoriteStatus) {
+    element.classList.add('favorite-active');
+    element.setAttribute('aria-label', 'Marked as favorite.');
+  } else {
+    element.classList.remove('favorite-active');
+    element.setAttribute('aria-label', 'Unmarked as favorite.');
+  }
 }

@@ -310,7 +310,7 @@ class DBHelper {
    * Save offline data on api server
    */
 
-   static saveOfflineDataOnAPI() {
+  static saveOfflineDataOnAPI() {
     const offlineReviews = JSON.parse(localStorage.getItem('reviews'));
     if (offlineReviews) {
       for (const key in offlineReviews) {
@@ -340,5 +340,27 @@ class DBHelper {
         }
       }
     }
-   }
+  }
+
+  /**
+  * Favorite a restaurant
+  */
+  static updateRestaurantFavorite(id, status) {
+    const url = `${DBHelper.DATABASE_URL}/restaurants/${id}?is_favorite=${status}`;
+    fetch(url, {
+        method: 'PUT'
+      })
+      .then(response => response.json())
+      .then(data => {
+        DBHelper._dbPromise.then(db => {
+          const tx = db.transaction('restaurants', 'readwrite');
+          const restaurantsStore = tx.objectStore('restaurants');
+          restaurantsStore.get(id)
+            .then(restaurant => {
+              restaurant.is_favorite = status;
+              restaurantsStore.put(restaurant);
+            });
+        });
+      })
+  }
 }
