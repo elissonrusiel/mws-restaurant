@@ -39,36 +39,36 @@ class DBHelper {
    */
   static fetchRestaurants(callback) {
     // Fetch from API and update idb
-    fetch(`${DBHelper.DATABASE_URL}/restaurants`)
-      .then(response => response.json())
-      .then(data => {
-        DBHelper._dbPromise.then(db => {
-          let tx = db.transaction('restaurants', 'readwrite');
-          let store = tx.objectStore('restaurants');
-          data.forEach(restaurant => {
-            store.put(restaurant);
-          });
-        });
-      })
-      .catch(err => {
-        const error = (`Fetch failed. Returned status of ${err}`);
-        console.log(error);
-      })
-      .then(() => {
-        // Get from idb and return to callback function
-        DBHelper._dbPromise.then(db => {
-          db.transaction('restaurants')
-            .objectStore('restaurants')
-            .getAll()
-            .then(data => {
-              callback(null, data)
-            })
-            .catch(err => {
-              const error = (`Get from idb failed. Returned status of ${err}`)
-              callback(error, null)
+    DBHelper._dbPromise.then(db => {
+      db.transaction('restaurants')
+        .objectStore('restaurants')
+        .getAll()
+        .then(data => {
+          if (data !== 0)
+            callback(null, data);
+        })
+        .catch(err => {
+          const error = (`Get from idb failed. Returned status of ${err}`)
+          callback(error, null)
+        })
+        .then(() => {
+          fetch(`${DBHelper.DATABASE_URL}/restaurants`)
+          .then(response => response.json())
+          .then(data => {
+            DBHelper._dbPromise.then(db => {
+              let tx = db.transaction('restaurants', 'readwrite');
+              let store = tx.objectStore('restaurants');
+              data.forEach(restaurant => {
+                store.put(restaurant);
+              });
             });
-        });
-      });
+          })
+          .catch(err => {
+            const error = (`Fetch failed. Returned status of ${err}`);
+            console.log(error);
+          })
+        })
+    });
   }
 
   /**
@@ -77,34 +77,34 @@ class DBHelper {
   static fetchRestaurantById(id, callback) {
     // fetch all restaurants with proper error handling.
     const url = `${DBHelper.DATABASE_URL}/restaurants/${id}`
-    fetch(url)
-      .then(response => response.json())
-      .then(data => {
-        DBHelper._dbPromise.then(db => {
-          let tx = db.transaction('restaurants', 'readwrite');
-          let store = tx.objectStore('restaurants');
-          store.put(data);
-        });
-      })
-      .catch(err => {
-        const error = (`Request failed. Returned status of ${err}`);
-        console.log(error);
-      })
-      .then(() => {
-        // Get from idb and return to callback function
-        DBHelper._dbPromise.then(db => {
-          db.transaction('restaurants')
-            .objectStore('restaurants')
-            .get(parseInt(id))
-            .then(data => {
-              callback(null, data)
-            })
-            .catch(err => {
-              const error = (`Get from idb failed. Returned status of ${err}`)
-              callback(error, null)
+    DBHelper._dbPromise.then(db => {
+      db.transaction('restaurants')
+        .objectStore('restaurants')
+        .get(parseInt(id))
+        .then(data => {
+          if (data !== 0)
+            callback(null, data);
+        })
+        .catch(err => {
+          const error = (`Get from idb failed. Returned status of ${err}`);
+          callback(error, null);
+        })
+        .then(() => {
+          fetch(url)
+          .then(response => response.json())
+          .then(data => {
+            DBHelper._dbPromise.then(db => {
+              let tx = db.transaction('restaurants', 'readwrite');
+              let store = tx.objectStore('restaurants');
+              store.put(data);
             });
-        });
-      });    
+          })
+          .catch(err => {
+            const error = (`Request failed. Returned status of ${err}`);
+            console.log(error);
+          })
+        })
+    });    
   }
 
   /**

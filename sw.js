@@ -23,25 +23,11 @@ self.addEventListener('install', function(event) {
         '/manifest.json',
         'img/icons/cloud-error.svg',
         'img/icons/heart-solid.svg',
-        'img/favicon/apple-touch-icon-57x57.png',
-        'img/favicon/apple-touch-icon-114x114.png',
-        'img/favicon/apple-touch-icon-72x72.png',
-        'img/favicon/apple-touch-icon-144x144.png',
-        'img/favicon/apple-touch-icon-60x60.png',
-        'img/favicon/apple-touch-icon-120x120.png',
-        'img/favicon/apple-touch-icon-76x76.png',
-        'img/favicon/apple-touch-icon-152x152.png',
         'img/favicon/favicon-1024x1024.png',
-        'img/favicon/favicon-196x196.png',
         'img/favicon/favicon-96x96.png',
         'img/favicon/favicon-32x32.png',
         'img/favicon/favicon-16x16.png',
-        'img/favicon/favicon-128.png',
-        'img/favicon/mstile-144x144.png',
-        'img/favicon/mstile-70x70.png',
-        'img/favicon/mstile-150x150.png',
-        'img/favicon/mstile-310x150.png',
-        'img/favicon/mstile-310x310.png',
+        'img/favicon/favicon-128.png'
       ]);
     })
   );
